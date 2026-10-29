@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+
+    <link rel="stylesheet" href="expense.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Expense Tracker</h1>
+
+      <div class="top-right">
+        <button onclick="handleDayByDayExpenses()" type="button">
+          Expense Chart
+        </button>
+
+        <button id="premiumBtn" type="button" onclick="handlepayments()">
+          Buy Membership
+        </button>
+      </div>
+    </header>
+
+    <div class="container">
+      <form onsubmit="handleExpense(event)">
+        <h2>Add Expense</h2>
+
+        <div>
+          <label for="type">Type</label>
+          <select id="type" required>
+            <option value="">-- Select Type --</option>
+            <option value="Expense">Expense</option>
+            <option value="Income">Income</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="amount">Amount</label>
+          <input
+            type="number"
+            id="amount"
+            placeholder="Enter amount"
+            min="1"
+            required
+          />
+        </div>
+
+        <label>Description</label>
+        <input type="text" id="description" required />
+
+        <label>Date</label>
+        <input type="date" id="date" required />
+
+        <button type="submit">Add Expense</button>
+      </form>
+      <br />
+      <br />
+      <form onsubmit="handledownloadcsv(event)">
+        <h2>Get Expense Sheet</h2>
+        <label>Start Date</label>
+        <input type="date" id="startDate" require />
+
+        <label>End Date</label>
+        <input type="date" id="endDate" require />
+        <button id="expenseButton" type="submit">Download Expenses</button>
+      </form>
+
+      <div class="actions">
+        <button id="leaderButton" onclick="handleLeaderboard()">
+          Display Leader Board
+        </button>
+      </div>
+
+      <ul></ul>
+
+      <div class="pagination-section">
+        <label for="limit">Rows per page:</label>
+
+        <select id="limit">
+          <option value="2">2</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="25">25</option>
+        </select>
+
+        <div id="pagination">
+          <button onclick="changePage(-1)">Previous</button>
+          <span id="pageNumber">Page 1</span>
+          <button onclick="changePage(1)">Next</button>
+        </div>
+      </div>
+
+      <div class="leaderboard-card">
+        <h2>Leader Board</h2>
+        <div id="leaderboard"></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="expense.js"></script>
+  </body>
+</html>

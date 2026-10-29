@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cashfree Payment</title>
+
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f5f5f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        width: 400px;
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 5px;
+        background: #16a34a;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #15803d;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Cashfree Payment</h2>
+
+      <form id="paymentForm">
+        <h3>Payable Amount: ₹500</h3>
+
+        <input
+          type="text"
+          id="phone"
+          placeholder="Enter Phone Number"
+          required
+        />
+
+        <button type="submit">Pay Now</button>
+      </form>
+    </div>
+
+    <script>
+      const cashfree = Cashfree({
+        mode: "sandbox",
+      });
+
+      const api = "http://localhost:4000/payments/create_order";
+
+      document
+        .getElementById("paymentForm")
+        .addEventListener("submit", handlePayment);
+
+      async function handlePayment(event) {
+        event.preventDefault();
+
+        const customerPhone = document.getElementById("phone").value;
+
+        try {
+          const token = localStorage.getItem("token");
+
+          if (!token) {
+            alert(
+              "Session expired. Please log in again before making a payment.",
+            );
+            window.location.href = "../login/login.html";
+            return;
+          }
+
+          const response = await axios.post(
+            api,
+            {
+              customerPhone,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          console.log("Full Response:", response.data);
+          console.log("Cashfree Data:", response.data.data);
+
+          const paymentSessionId = response.data.data.payment_session_id;
+
+          console.log("Payment Session ID:", paymentSessionId);
+
+          if (!paymentSessionId) {
+            alert("Payment Session ID not found.");
+            return;
+          }
+
+          const checkoutOptions = {
+            paymentSessionId: paymentSessionId,
+            redirectTarget: "_self",
+          };
+
+          console.log("Checkout Options:", checkoutOptions);
+
+          const result = await cashfree.checkout(checkoutOptions);
+
+          console.log("Checkout Result:", result);
+        } catch (error) {
+          console.error("Error:", error);
+
+          if (error.response) {
+            console.log("Backend Error:", error.response.data);
+          }
+
+          alert("Unable to start payment.");
+        }
+      }
+    </script>
+  </body>
+</html>

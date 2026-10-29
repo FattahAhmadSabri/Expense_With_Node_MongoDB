@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cashfree Checkout</title>
+
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+  </head>
+  <body>
+    <div class="row">
+      <p>Click below to open the checkout page</p>
+      <button id="renderBtn">Proceed to Pay</button>
+    </div>
+
+    <script>
+      const cashfree = Cashfree({
+        mode: "sandbox",
+      });
+
+    
+      const paymentSessionId = sessionStorage.getItem("paymentSessionId");
+
+      console.log(paymentSessionId);
+
+      document.getElementById("renderBtn").addEventListener("click", () => {
+        if (!paymentSessionId) {
+          alert("Payment Session ID not found.");
+          return;
+        }
+
+        const checkoutOptions = {
+          paymentSessionId: paymentSessionId,
+          redirectTarget: "_self",
+        };
+
+        cashfree.checkout(checkoutOptions);
+      });
+    </script>
+  </body>
+</html>

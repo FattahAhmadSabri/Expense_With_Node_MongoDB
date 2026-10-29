@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Reports</title>
+
+    <link rel="stylesheet" href="dayByDay.css" />
+  </head>
+  <body>
+    <!-- Day By Day Expense -->
+    <h2>Day By Day Expenses</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Income</th>
+          <th>Expense</th>
+        </tr>
+      </thead>
+
+      <tbody id="dailyExpenseBody"></tbody>
+
+      <tfoot>
+        <tr>
+          <td colspan="4"><strong>Total Savings</strong></td>
+          <td id="dailySavingAmount"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <br /><br />
+
+    <!-- Monthly Expense -->
+    <h2>Monthly Expense Report</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Income</th>
+          <th>Expense</th>
+          <th>Savings</th>
+        </tr>
+      </thead>
+
+      <tbody id="monthlyExpenseBody"></tbody>
+    </table>
+
+    <br /><br />
+    <h2>Yearly Expense Report</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Total Income</th>
+          <th>Total Expense</th>
+          <th>Savings</th>
+        </tr>
+      </thead>
+      <tbody id="yearlyExpenseBody"></tbody>
+    </table>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="dayByDayExpense.js"></script>
+  </body>
+</html>
