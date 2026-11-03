@@ -2,6 +2,7 @@ const User = require("../model/userSchema");
 const { ForgotPassword } = require("../model/forgotPassword");
 const { hashPassword, comparePassword } = require("../middleware/bcryptConfig");
 const sendEmail = require("./emailService");
+const mongoose = require("mongoose");
 
 const createUserService = async (name, email, password) => {
   const hashedPassword = await hashPassword(password);
@@ -28,22 +29,13 @@ const loginService = async (email, password) => {
 };
 
 const forgotPasswordService = async (email) => {
-  const session = await mongoose.startSession();
+  const user = await User.findOne({ email });
 
-  let user;
-  let resetRequest;
+  if (!user) {
+    return false;
+  }
 
   try {
-    session.startTransaction();
-
-    // Find user by email
-    user = await User.findOne({ email }).session(session);
-
-    if (!user) {
-      await session.abortTransaction();
-      return false;
-    }
-
     // Deactivate previous active reset requests
     await ForgotPassword.updateMany(
       {
@@ -53,42 +45,30 @@ const forgotPasswordService = async (email) => {
       {
         $set: { isActive: false },
       },
-      { session },
     );
 
     // Create a new reset request
-    [resetRequest] = await ForgotPassword.create(
-      [
-        {
-          userId: user._id,
-          isActive: true,
-          expiresAt: new Date(Date.now() + 30 * 60 * 1000),
-        },
-      ],
-      { session },
+    const resetRequest = await ForgotPassword.create({
+      userId: user._id,
+      isActive: true,
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+    });
+
+    // Send reset password email
+    await sendEmail(
+      user.email,
+      "Reset Password",
+      `
+        <a href="http://localhost:5500/frontend/login/reset-password.html?id=${resetRequest._id}">
+          Reset Password
+        </a>
+      `,
     );
 
-    await session.commitTransaction();
+    return true;
   } catch (error) {
-    if (session.inTransaction()) {
-      await session.abortTransaction();
-    }
     throw error;
-  } finally {
-    await session.endSession();
   }
-
-  await sendEmail(
-    user.email,
-    "Reset Password",
-    `
-      <a href="http://localhost:5500/frontend/login/reset-password.html?id=${resetRequest._id}">
-        Reset Password
-      </a>
-    `,
-  );
-
-  return true;
 };
 
 const updatePasswordService = async (resetId, password) => {

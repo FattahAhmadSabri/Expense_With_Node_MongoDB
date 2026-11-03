@@ -8,6 +8,12 @@ const paymentSchema = new mongoose.Schema(
       unique: true,
     },
 
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User ID is required"],
+    },
+
     amount: {
       type: Number,
       required: [true, "Amount is required"],

@@ -13,11 +13,12 @@ const addExpenseService = async (
   income,
   description,
   userId,
-  createdAt,
+  createdAt
 ) => {
   amount = Number(amount) || 0;
   income = Number(income) || 0;
 
+ 
   const response = await ai.models.generateContent({
     model: "gemini-3.5-flash",
     contents: `Classify this expense description into exactly one word: "${description}"`,
@@ -29,34 +30,65 @@ const addExpenseService = async (
 
   const category = response.text?.trim() || "Other";
 
-  const expense = await Expense.create({
-    amount,
-    income,
-    description,
-    category,
-    userId,
-    createdAt,
-  });
+  const session = await mongoose.startSession();
 
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { $inc: { totalExpense: amount } },
-    { new: true },
-  );
+  let expense;
+  let updatedUser;
 
-  if (!user) {
-    await Expense.findByIdAndDelete(expense._id);
-    throw new Error("User not found");
+  try {
+    await session.withTransaction(async () => {
+
+      
+      const expenses = await Expense.create(
+        [
+          {
+            amount,
+            income,
+            description,
+            category,
+            userId,
+            createdAt,
+          },
+        ],
+        { session }
+      );
+
+      expense = expenses[0];
+
+      // 2. Update user's total expense
+      updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          $inc: { totalExpense: amount },
+        },
+        {
+          new: true,
+          session,
+        }
+      );
+
+      // 3. Rollback if user doesn't exist
+      if (!updatedUser) {
+        throw new Error("User not found");
+      }
+    });
+
+    // Transaction committed successfully
+
+  } finally {
+    await session.endSession();
   }
 
+  // 4. Upload to S3 after transaction commits
   await uploadUserData(userId, {
-    id: user._id.toString(),
-    totalExpense: user.totalExpense,
+    id: updatedUser._id.toString(),
+    totalExpense: updatedUser.totalExpense,
     amount,
   });
 
   return expense;
 };
+
 const getExpenseService = async (userId, page, limit) => {
   page = Number(page) || 1;
   limit = Number(limit) || 10;
