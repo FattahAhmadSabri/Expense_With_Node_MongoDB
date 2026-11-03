@@ -1,5 +1,5 @@
 const User = require("../model/userSchema");
-const { ForgotPassword } = require("../model/forgotPassword");
+const  ForgotPassword  = require("../model/forgotPassword");
 const { hashPassword, comparePassword } = require("../middleware/bcryptConfig");
 const sendEmail = require("./emailService");
 const mongoose = require("mongoose");
